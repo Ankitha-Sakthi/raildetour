@@ -4,7 +4,18 @@ import cors from 'cors';
 import { analyzeCrossing, getCrossings, getRoadRoutes } from './services.js';
 
 const app = express();
-app.use(cors());
+
+// CORS: allow the deployed Vercel frontend (FRONTEND_URL) and localhost for dev.
+const allowedOrigins: string[] = ['http://localhost:5173'];
+if (process.env.FRONTEND_URL) {
+  allowedOrigins.push(process.env.FRONTEND_URL.replace(/\/+$/, ''));
+}
+app.use(cors({
+  origin: allowedOrigins,
+  methods: ['GET', 'POST', 'OPTIONS'],
+  credentials: false
+}));
+
 app.use(express.json());
 
 app.get('/api/health', (_req, res) => res.json({ ok: true, service: 'raildetour-api' }));
