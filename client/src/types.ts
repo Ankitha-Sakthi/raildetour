@@ -1,3 +1,5 @@
+/* ── Existing railway-crossing types ────────────────────────────────── */
+
 export type Crossing = {
   id: string;
   name: string;
@@ -26,4 +28,58 @@ export type RouteOption = {
   polyline: string;
   passesCrossing: boolean;
   routeLabel?: string;
+};
+
+/* ── Multimodal transit types ───────────────────────────────────────── */
+
+export type TransportMode = 'train' | 'bus' | 'ferry' | 'auto';
+
+export type TransitService = {
+  id: string;
+  mode: TransportMode;
+  name: string;
+  route: string;
+  origin: string;
+  destination: string;
+  departureTime: string;
+  arrivalTime: string;
+  durationMinutes: number;
+  delayMinutes: number;
+  status: 'on-time' | 'delayed' | 'cancelled';
+  isDemo: boolean;
+};
+
+export type TransferRisk = 'HIGH' | 'MEDIUM' | 'LOW';
+
+export type JourneyLeg = {
+  service: TransitService;
+  boardAt: string;
+  alightAt: string;
+  departureTime: string;
+  arrivalTime: string;
+  transferRisk?: TransferRisk;
+  transferMinutes?: number;
+  transferMessage?: string;
+  alternative?: TransitService;
+};
+
+export type JourneyOption = {
+  id: string;
+  legs: JourneyLeg[];
+  totalDurationMinutes: number;
+  transfers: number;
+  hasHighRisk: boolean;
+  hasCrossingRisk: boolean;
+  label: string;
+};
+
+export type CommunityReport = {
+  id: string;
+  type: 'delay' | 'schedule-change' | 'disruption';
+  mode: TransportMode;
+  route: string;
+  message: string;
+  delayMinutes?: number;
+  timestamp: string;
+  reporter: string;
 };

@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import { analyzeCrossing, getCrossings, getRoadRoutes } from './services.js';
+import { analyzeCrossing, getCrossings, getRoadRoutes, planJourneyDemo, getCommunityReports, addCommunityReport } from './services.js';
 
 const app = express();
 
@@ -17,6 +17,8 @@ app.use(cors({
 }));
 
 app.use(express.json());
+
+/* ── Existing endpoints (unchanged) ─────────────────────────────── */
 
 app.get('/api/health', (_req, res) => res.json({ ok: true, service: 'raildetour-api' }));
 app.get('/api/crossings', (_req, res) => res.json({ crossings: getCrossings() }));
@@ -44,6 +46,35 @@ app.post('/api/routes', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(502).send(error instanceof Error ? error.message : 'Routes provider error');
+  }
+});
+
+/* ── Multimodal transit endpoints (new) ─────────────────────────── */
+
+app.post('/api/transit/plan', (req, res) => {
+  try {
+    const { origin, destination, departureTime, modes } = req.body ?? {};
+    if (!origin || !destination) return res.status(400).send('origin and destination are required');
+    res.json(planJourneyDemo(origin, destination, departureTime ?? '08:00', modes ?? ['train', 'bus', 'ferry', 'auto']));
+  } catch (error) {
+    console.error(error);
+    res.status(500).send(error instanceof Error ? error.message : 'Journey planning error');
+  }
+});
+
+app.get('/api/community/updates', (_req, res) => {
+  res.json({ updates: getCommunityReports() });
+});
+
+app.post('/api/community/updates', (req, res) => {
+  try {
+    const { type, mode, route, message, delayMinutes } = req.body ?? {};
+    if (!type || !mode || !route || !message) return res.status(400).send('type, mode, route, and message are required');
+    const update = addCommunityReport({ type, mode, route, message, delayMinutes: delayMinutes ? Number(delayMinutes) : undefined });
+    res.json({ update });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send(error instanceof Error ? error.message : 'Report submission error');
   }
 });
 
